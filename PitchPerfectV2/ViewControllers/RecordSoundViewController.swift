@@ -7,10 +7,14 @@
 //
 
 import UIKit
+import AVFoundation
 
 class RecordSoundViewController: UIViewController {
     
     var navBar: UINavigationBar! = nil
+    var audioRecorder: AVAudioRecorder!
+    
+//MARK: Set up UI
     
     let recordButton: UIButton = {
         let button = UIButton()
@@ -18,17 +22,18 @@ class RecordSoundViewController: UIViewController {
            if let image = UIImage(named: "RecordButton") {
                 button.setImage(image, for: .normal)
            }
+        button.addTarget(self, action: #selector(recordAudio), for: .touchUpInside)
         return button
     }()
     
-    let statusLabel: UILabel = {
+    let recordingLabel: UILabel = {
         let label = UILabel()
         label.text = "Tap to Record"
         label.textAlignment = .center
         return label
     }()
     
-    let stopButton: UIButton = {
+    let stopRecordButton: UIButton = {
         let button = UIButton()
         let playButton  = UIButton(type: .custom)
            if let image = UIImage(named: "StopRecordButton") {
@@ -38,6 +43,8 @@ class RecordSoundViewController: UIViewController {
         return button
     }()
     
+//MARK: UI Layout
+    
     private func setupRecordButton() {
         recordButton.sizeToFit()
         recordButton.translatesAutoresizingMaskIntoConstraints = false
@@ -46,34 +53,89 @@ class RecordSoundViewController: UIViewController {
         recordButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
         recordButton.heightAnchor.constraint(equalToConstant: 200).isActive = true
         
-        statusLabel.translatesAutoresizingMaskIntoConstraints = false
-        statusLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        statusLabel.topAnchor.constraint(equalTo: recordButton.bottomAnchor, constant: 10).isActive = true
-        statusLabel.widthAnchor.constraint(equalToConstant: 300).isActive = true
-        statusLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        recordingLabel.translatesAutoresizingMaskIntoConstraints = false
+        recordingLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        recordingLabel.topAnchor.constraint(equalTo: recordButton.bottomAnchor, constant: 10).isActive = true
+        recordingLabel.widthAnchor.constraint(equalToConstant: 300).isActive = true
+        recordingLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
-        stopButton.translatesAutoresizingMaskIntoConstraints = false
-        stopButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        stopButton.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 30).isActive = true
-        stopButton.widthAnchor.constraint(equalToConstant: 64).isActive = true
-        stopButton.heightAnchor.constraint(equalTo: stopButton.widthAnchor).isActive = true
+        stopRecordButton.translatesAutoresizingMaskIntoConstraints = false
+        stopRecordButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        stopRecordButton.topAnchor.constraint(equalTo: recordingLabel.bottomAnchor, constant: 30).isActive = true
+        stopRecordButton.widthAnchor.constraint(equalToConstant: 64).isActive = true
+        stopRecordButton.heightAnchor.constraint(equalTo: stopRecordButton.widthAnchor).isActive = true
     }
+    
+//MARK: Button functions
 
     @objc func stopRecording(sender: UIButton!) {
+        configUI(.stopedRecording)
         let nextView = PlaySoundViewController()
         navigationController?.pushViewController(nextView, animated: true)
     }
+    
+    @objc func recordAudio() {
+        configUI(.recording)
+        let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)[0] as String
+        let recordingName = "recordedVoice.wav"
+        let pathArray = [dirPath, recordingName]
+        let filePath = URL(string: pathArray.joined(separator: "/"))
+        let session = AVAudioSession.sharedInstance()
+        try! session.setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
+        try! audioRecorder = AVAudioRecorder(url: filePath!, settings: [:])
+        audioRecorder.delegate = self
+        audioRecorder.isMeteringEnabled = true
+        audioRecorder.prepareToRecord()
+        audioRecorder.record()
+    }
+    
+//MARK: Adjust UI
+        
+    enum status: Int {
+        case recording = 0, stopedRecording
+    }
+    
+    func configUI(_ status: status) {
+        switch status {
+        case .recording:
+            recordingLabel.text = "Recording in progress"
+            stopRecordButton.isEnabled = true
+            recordButton.isEnabled = false
+        case .stopedRecording:
+            recordingLabel.text = "tap to record"
+            recordButton.isEnabled = true
+            stopRecordButton.isEnabled = false
+        }
+    }
+    
+//MARK: Basic life circle functions
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Record sound"
         view.backgroundColor = .white
         self.view.addSubview(recordButton)
-        self.view.addSubview(statusLabel)
-        self.view.addSubview(stopButton)
+        self.view.addSubview(recordingLabel)
+        self.view.addSubview(stopRecordButton)
         setupRecordButton()
     }
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        configUI(.stopedRecording)
+        
+    }
 
 }
 
+// MARK: - Audio Recorder Delegate
+
+extension RecordSoundViewController: AVAudioRecorderDelegate {
+    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        if flag {
+            performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
+        } else {
+            print("unsucessifull recording")
+        }
+    }
+}
