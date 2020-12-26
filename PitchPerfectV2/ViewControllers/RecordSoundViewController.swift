@@ -10,6 +10,8 @@ import UIKit
 
 class RecordSoundViewController: UIViewController {
     
+    var navBar: UINavigationBar! = nil
+    
     let recordButton: UIButton = {
         let button = UIButton()
         let playButton  = UIButton(type: .custom)
@@ -38,8 +40,6 @@ class RecordSoundViewController: UIViewController {
     
     private func setupRecordButton() {
         recordButton.sizeToFit()
-               
-        //        button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
         recordButton.translatesAutoresizingMaskIntoConstraints = false
         recordButton.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         recordButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -57,65 +57,21 @@ class RecordSoundViewController: UIViewController {
         stopButton.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 30).isActive = true
         stopButton.widthAnchor.constraint(equalToConstant: 64).isActive = true
         stopButton.heightAnchor.constraint(equalTo: stopButton.widthAnchor).isActive = true
-        
-    }
-    func setNavigationBar() {
-        let screenSize: CGRect = UIScreen.main.bounds
-        let navBar = UINavigationBar(frame: CGRect(x: 0, y: 0, width: screenSize.width, height: 1004))
-        let navItem = UINavigationItem(title: "")
-//        let doneItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.done, target: nil, action: #selector(done))
-//        navItem.rightBarButtonItem = doneItem
-        navBar.setItems([navItem], animated: false)
-        self.view.addSubview(navBar)
-    }
-
-    @objc func done() {
-        
-
-        
     }
 
     @objc func stopRecording(sender: UIButton!) {
-
+        let nextView = PlaySoundViewController()
+        navigationController?.pushViewController(nextView, animated: true)
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setNavigationBar()
-        
-        // Do any additional setup after loading the view.
+        self.title = "Record sound"
+        view.backgroundColor = .white
         self.view.addSubview(recordButton)
         self.view.addSubview(statusLabel)
         self.view.addSubview(stopButton)
         setupRecordButton()
-        
-        
-        
-
-        
-        
-        
-        
-//        let stackView   = UIStackView()
-//        self.view.addSubview(stackView)
-//        stackView.translatesAutoresizingMaskIntoConstraints = false
-//
-//        stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-//        stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-//
-//        stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-//        stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-//        stackView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-//        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-//
-//        stackView.axis  = NSLayoutConstraint.Axis.vertical
-//        stackView.distribution  = UIStackView.Distribution.equalSpacing
-////        stackView.alignment = UIStackView.Alignment.center
-//        stackView.spacing   = 16.0
-//
-//        stackView.addArrangedSubview(button)
-//        stackView.addArrangedSubview(button2)
     }
 
 
