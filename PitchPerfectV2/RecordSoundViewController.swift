@@ -70,8 +70,9 @@ class RecordSoundViewController: UIViewController {
 
     @objc func stopRecording(sender: UIButton!) {
         configUI(.stopedRecording)
-        let nextView = PlaySoundViewController()
-        navigationController?.pushViewController(nextView, animated: true)
+        audioRecorder.stop()
+        let audioSession = AVAudioSession.sharedInstance()
+        try! audioSession.setActive(false)
     }
     
     @objc func recordAudio() {
@@ -133,7 +134,9 @@ class RecordSoundViewController: UIViewController {
 extension RecordSoundViewController: AVAudioRecorderDelegate {
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         if flag {
-            performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
+            let nextView = PlaySoundViewController()
+            nextView.recordedAudioURL = audioRecorder.url
+            navigationController?.pushViewController(nextView, animated: true)
         } else {
             print("unsucessifull recording")
         }

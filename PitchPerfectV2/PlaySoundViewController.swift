@@ -7,23 +7,24 @@
 //
 
 import UIKit
+import AVFoundation
 
 class PlaySoundViewController: UIViewController {
 
-//    enum buttonsImages: String, CaseIterable {
-//        case Echo
-//        case Fast
-//        case HigthPitch
-//        case LowPitch
-//        case Reverb
-//        case Slow
-//    }
     
-    let buttonsImages = ["Echo", "Fast", "HigthPitch", "LowPitch", "Reverb", "Slow"]
+    let buttonsImages = ["Slow", "Fast", "HigthPitch", "LowPitch", "Echo", "Reverb"]
+    enum ButtonType: Int {
+        case slow = 0, fast, chipmunk, vader, echo, reverb
+    }
     
-    private func setupRecordButton() {
-        
-        
+    var recordedAudioURL: URL!
+    var audioFile: AVAudioFile!
+    var audioEngine: AVAudioEngine!
+    var audioPlayerNode: AVAudioPlayerNode!
+    var stopTimer: Timer!
+    let stopButton = UIButton()
+    
+    private func setupButtons() {
         let stackView   = UIStackView()
         stackView.axis  = NSLayoutConstraint.Axis.vertical
         stackView.distribution  = UIStackView.Distribution.equalSpacing
@@ -62,16 +63,42 @@ class PlaySoundViewController: UIViewController {
             
         }
         
+        stopButton.addTarget(self, action: #selector(stopSound), for: .touchUpInside)
+        let image = UIImage(named: "StopRecordButton")
+        stopButton.setImage(image!, for: .normal)
+        
+        stackView.addArrangedSubview(stopButton)
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupButtons()
+        setupAudio()
         view.backgroundColor = UIColor.white
-        setupRecordButton()
         
     }
     
     @objc func playSound(sender: UIButton) {
-        print(sender.tag)
+//        print(sender.tag)
+        switch(ButtonType(rawValue: sender.tag)!) {
+        case .slow:
+            playSound(rate: 0.5)
+        case .fast:
+            playSound(rate: 1.5)
+        case .chipmunk:
+            playSound(pitch: 1000)
+        case .vader:
+            playSound(pitch: -1000)
+        case .echo:
+            playSound(echo: true)
+        case .reverb:
+            playSound(reverb: true)
+        }
+        configureUI(.playing)
+    }
+    
+    @objc func stopSound() {
+        stopAudio()
     }
 }
